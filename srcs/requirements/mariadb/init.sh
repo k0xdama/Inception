@@ -13,12 +13,12 @@ mysql -e "CREATE DATABASE IF NOT EXISTS mariadb;" || {
        	exit 1 
 }
 
-mysql -e "CREATE USER 'root'@'172.17.0.1' IDENTIFIED by 'hoothoot';" || {
+mysql -e "CREATE USER IF NOT EXISTS 'root'@'172.17.0.1' IDENTIFIED by 'hoothoot';" || {
 	echo "Impossible de créer un utilisateur root pour l'hôte !"
 	exit 1
 }
 
-mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'172.17.0.1' with GRANT OPTIONS;" || {
+mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'172.17.0.1' with GRANT OPTION;" || {
 	echo "Impossible d'attribuer tout les droits à l'utilisateur root de l'hôte !"
 	exit 1
 }
@@ -28,7 +28,7 @@ mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'hoothoot';" || {
        	exit 1 
 }
 
-mysql -u root -p"hoothoot" -e "CREATE USER 'bird'@'localhost' IDENTIFIED BY 'cuicui';" || {
+mysql -u root -p"hoothoot" -e "CREATE USER IF NOT EXISTS 'bird'@'localhost' IDENTIFIED BY 'cuicui';" || {
 	echo "Impossible de créer l'utilisateur BIRD !"
        	exit 1 
 }
