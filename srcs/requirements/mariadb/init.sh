@@ -8,7 +8,7 @@ service mariadb start || {
 
 sleep 2
 
-mysql -e "CREATE DATABASE IF NOT EXISTS mariadb;" || {
+mysql -e "CREATE DATABASE IF NOT EXISTS wordpress;" || {
 	echo "Impossible de créer une base de données !"
        	exit 1 
 }
@@ -33,7 +33,7 @@ mysql -u root -p"hoothoot" -e "CREATE USER IF NOT EXISTS 'bird'@'localhost' IDEN
        	exit 1 
 }
 
-mysql -u root -p"hoothoot" -e "GRANT ALL PRIVILEGES ON mariadb.* TO 'bird'@'localhost' IDENTIFIED BY 'cuicui';" || {
+mysql -u root -p"hoothoot" -e "GRANT ALL PRIVILEGES ON wordpress.* TO 'bird'@'localhost' IDENTIFIED BY 'cuicui';" || {
 	echo "Impossible de donner les privilèges sur la base de données MARIADB à BIRD !"
 	exit 1 
 }
