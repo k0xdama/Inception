@@ -4,16 +4,16 @@ services:
     depends_on:
       - mariadb
       - nginx
-    ports: 
-      - 443:443
     volumes:
       - wordpress_data:/var/www/html
     networks:
       - inception_network
   nginx:
     image: nginx:v1
-    depends on:
+    depends_on:
       - mariadb
+    ports:
+      - 443:433
     volumes:
       - wordpress_data:/var/www/html
     networks:
