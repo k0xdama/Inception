@@ -1,0 +1,33 @@
+services:
+  wordpress:
+    image: wordpress:v1
+    depends_on:
+      - mariadb
+      - nginx
+    ports: 
+      - 443:443
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception_network
+  nginx:
+    image: nginx:v1
+    depends on:
+      - mariadb
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception_network
+  mariadb:
+    image: mariadb:v1
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - inception_network
+volumes:
+  wordpress_data:
+  mariadb_data:
+      
+networks:
+  inception_network:
+    driver: bridge
