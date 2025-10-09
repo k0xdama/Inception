@@ -2,31 +2,36 @@ services:
   wordpress:
     image: wordpress:v1
     depends_on:
-      - mariadb
-      - nginx
+      mariadb:
+        condition: service_healthy
     volumes:
-      - wordpress_data:/var/www/html
+      - /srv/data/wordpress:/var/www/html
     networks:
       - inception_network
+    restart: unless-stopped
   nginx:
     image: nginx:v1
     depends_on:
-      - mariadb
+      - wordpress
     ports:
-      - 443:433
+      - 443:443
     volumes:
-      - wordpress_data:/var/www/html
+      - /srv/data/wordpress:/var/www/html:ro
     networks:
       - inception_network
+    restart: unless-stopped
   mariadb:
     image: mariadb:v1
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - /srv/data/mariadb:/var/lib/mysql
     networks:
       - inception_network
-volumes:
-  wordpress_data:
-  mariadb_data:
+    restart: unless-stopped
       
 networks:
   inception_network:
