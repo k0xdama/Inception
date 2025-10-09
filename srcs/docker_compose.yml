@@ -4,6 +4,15 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy
+    environment:
+      WP_DB_HOST: mariadb:3306
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_USER_PASSWORD: ${MARIADB_USER_PASSWORD}
+      WP_ADM_USER: ${WP_ADM_USER}
+      WP_ADM_PASSWORD: ${WP_ADM_PASSWORD}
+      WP_OTH_USER: ${WP_OTH_USER}
+      WP_OTH_PASSWORD: ${WP_OTH_PASSWORD}
     volumes:
       - /srv/data/wordpress:/var/www/html
     networks:
@@ -27,6 +36,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    environment:
+      MARIADB_DATABSE: ${MARIADB_DATABASE}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_USER_PASSWORD: ${MARIADB_USER_PASSWORD}
     volumes:
       - /srv/data/mariadb:/var/lib/mysql
     networks:
