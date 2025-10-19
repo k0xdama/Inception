@@ -9,7 +9,7 @@ services:
       MARIADB_DATABASE: ${MARIADB_DATABASE}
       MARIADB_USER: ${MARIADB_USER}
       MARIADB_USER_PASSWORD: ${MARIADB_USER_PASSWORD}
-      WP_ADM_USER: ${WP_ADM_USER}
+      WP_ADM: ${WP_ADM}
       WP_ADM_PASSWORD: ${WP_ADM_PASSWORD}
       WP_OTH_USER: ${WP_OTH_USER}
       WP_OTH_PASSWORD: ${WP_OTH_PASSWORD}
@@ -35,7 +35,7 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 3
     environment:
       MARIADB_DATABASE: ${MARIADB_DATABASE}
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
