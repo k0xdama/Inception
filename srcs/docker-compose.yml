@@ -1,6 +1,8 @@
 services:
   wordpress:
+    container_name: wordpress
     image: wordpress:v1
+    user: 33:33
     depends_on:
       mariadb:
         condition: service_healthy
@@ -11,25 +13,28 @@ services:
       MARIADB_USER_PASSWORD: ${MARIADB_USER_PASSWORD}
       WP_ADM: ${WP_ADM}
       WP_ADM_PASSWORD: ${WP_ADM_PASSWORD}
+      WP_ADM_EMAIL: ${WP_ADM_EMAIL}
       WP_OTH_USER: ${WP_OTH_USER}
       WP_OTH_PASSWORD: ${WP_OTH_PASSWORD}
     volumes:
-      - /srv/data/wordpress:/var/www/html
+      - /srv/data/wordpress:/var/www/html/wordpress
     networks:
       - inception_network
     restart: unless-stopped
   nginx:
+    container_name: nginx
     image: nginx:v1
     depends_on:
       - wordpress
     ports:
       - 443:443
     volumes:
-      - /srv/data/wordpress:/var/www/html:ro
+      - /srv/data/wordpress:/var/www/html/wordpress:ro
     networks:
       - inception_network
     restart: unless-stopped
   mariadb:
+    container_name: mariadb
     image: mariadb:v1
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]

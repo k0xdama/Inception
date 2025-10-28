@@ -18,14 +18,20 @@
 
 # Default server configuration
 #
+
+user www-data;
+worker_processes auto;
+
 events {
 	worker_connections 1024;
 }
 
 http {
+	include /etc/nginx/mime.types;
+	default_type application/octet-stream;
 server {
 
-	server_name ${DOMAIN_NAME};
+	server_name pmateo.42.fr;
 	listen 443 ssl default_server;
 	listen [::]:443 ssl default_server;
 
@@ -45,7 +51,7 @@ server {
 	#
 	# include snippets/snakeoil.conf;
 
-	root /var/www/html;
+	root /var/www/html/wordpress;
 
 	gzip off;
 
@@ -53,13 +59,20 @@ server {
 	ssl_certificate_key /etc/ssl/private/nginx.key;
 
 	# Add index.php to the list if you are using PHP
-	index index.html index.htm index.nginx-debian.html;
+	index index.php index.html index.htm index.nginx-debian.html;
 
 	location / {
 		# First attempt to serve request as file, then
 		# as directory, then fall back to displaying a 404.
 		try_files $uri $uri/ =404;
 	}
+
+	location ~\.php$ {
+		include fastcgi_params;
+		fastcgi_pass wordpress:9000;
+		fastcgi_index index.php;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+}
 
 	# pass PHP scripts to FastCGI server
 	#
