@@ -8,13 +8,15 @@ EXPOSE 9000
 
 EXPOSE 3306 
 
+WORKDIR /var/www/html
+
 COPY ./init.sh .
 
 COPY ./php-fpm.conf /etc/php/8.2/fpm/pool.d/zz-custom.conf
 
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 
-RUN mkdir /var/www && chown -R 33:33 /var/www && chown 33:33 wp-cli.phar
+RUN chown -R 33:33 /var/www && chown 33:33 wp-cli.phar
 
 RUN chmod 500 wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
 

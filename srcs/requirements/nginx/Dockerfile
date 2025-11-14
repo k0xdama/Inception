@@ -14,6 +14,9 @@ COPY ./init.sh .
 
 COPY ./default.cnf /etc/nginx/nginx.conf
 
-RUN chmod 500 ./init.sh
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+			-keyout /etc/ssl/private/nginx.key -out /etc/ssl/certs/nginx.crt \
+			-subj "/C=FR/ST=ILE-DE-FRANCE/L=PARIS/O=42/CN=localhost"
+RUN chmod 600 /etc/ssl/private/nginx.key
 
-CMD ["./init.sh"]
+CMD ["nginx", "-g", "daemon off;"]

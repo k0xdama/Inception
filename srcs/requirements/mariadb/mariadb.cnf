@@ -7,7 +7,7 @@
 
 # this is only for the mariadbd daemon
 [mariadbd]
-
+innodb_use_native_aio = 0 
 port = 3306
 
 #
@@ -73,7 +73,7 @@ bind-address            = *
 #       settings you may need to change.
 #server-id              = 1
 #log_bin                = /var/log/mysql/mysql-bin.log
-expire_logs_days        = 10
+#expire_logs_days        = 10
 #max_binlog_size        = 100M
 
 #

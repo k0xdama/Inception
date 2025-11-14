@@ -1,11 +1,6 @@
 #!/bin/bash
 
-#MARIADB_DATABASE=wordpress
-#MARIADB_USER=bird
-#MARIADB_PASSWORD=cuicui
-#WP_ADM=pmateo
-#WP_ADM_PASSWORD=imyummyotp
-#WP_ADM_EMAIL=pmateo@student.42paris.fr
+set -e
 
 echo  "init.sh has been runned :)"
 
@@ -22,6 +17,7 @@ fi
 if ! wp core is-installed --path=/var/www/html/wordpress 2>/dev/null; then
 	wp core install --path=/var/www/html/wordpress --url=pmateo.42.fr --title=Pmateo_Website --admin_user=${WP_ADM} \
 		--admin_password=${WP_ADM_PASSWORD} --admin_email=${WP_ADM_EMAIL}
+	wp theme install twentytwentyfour --activate --allow-root
 	echo "Wordpress has been installed !"
 fi
 
