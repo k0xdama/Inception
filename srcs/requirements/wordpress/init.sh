@@ -17,6 +17,7 @@ fi
 if ! wp core is-installed --path=/var/www/html/wordpress 2>/dev/null; then
 	wp core install --path=/var/www/html/wordpress --url=pmateo.42.fr --title=Pmateo_Website --admin_user=${WP_ADM} \
 		--admin_password=${WP_ADM_PASSWORD} --admin_email=${WP_ADM_EMAIL}
+	wp user create ${WP_OTH_USER} --user_pass=${WP_OTH_PASSWORD}
 	wp theme install twentytwentyfour --activate --allow-root
 	echo "Wordpress has been installed !"
 fi

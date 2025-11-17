@@ -28,6 +28,8 @@ services:
       - wordpress
     ports:
       - 443:443
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME}
     volumes:
       - /srv/data/wordpress:/var/www/html/wordpress:ro
     networks:

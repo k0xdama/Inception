@@ -8,7 +8,7 @@ if [ "$(id -u)" = "0" ];then
 	if [ ! -f /etc/ssl/certs/nginx.crt ]; then
 		openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 			-keyout /etc/ssl/private/nginx.key -out /etc/ssl/certs/nginx.crt \
-			-subj "/C=FR/ST=ILE-DE-FRANCE/L=PARIS/O=42/CN=localhost"
+			-subj "/C=FR/ST=ILE-DE-FRANCE/L=PARIS/O=42/CN=$DOMAIN_NAME"
 		chmod 600 /etc/ssl/private/nginx.key
 	fi
 fi
