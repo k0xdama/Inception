@@ -8,19 +8,67 @@ GREEN		:=	\033[32m
 YELLOW		:=	\033[33m
 BLUE		:=	\033[34m
 CYAN		:=	\033[36m
-PURPLE		:=	\033[38;2;211;211;255m
 
 NAME = inception
 
 COMPOSE_FILE = srcs/docker-compose.yml
 
-all: up
+all: setup-docker setup-dirs build up
+
+setup-docker:
+	@echo "${CYAN}Configuring Docker usernamespace remapping...${RESET}"
+	@if ! id dockermap >/dev/null 2>&1; then \
+		echo "${YELLOW}Creating dockermap user...${RESET}"; \
+		sudo useradd -r -s /bin/false dockermap; \
+		echo "${GREEN}User dockermap has been created !${RESET}"; \
+	else \
+		echo "${GREEN}User dockermap already exists${RESET}"; \
+	fi
+	@if ! grep -q "^dockermap" /etc/subuid 2>/dev/null; then \
+		echo "${YELLOW}Editing /etc/subuid...${RESET}"; \
+		echo "dockermap:100000:65536" | sudo tee -a /etc/subuid > /dev/null; \
+		echo "${GREEN}/etc/subuid has been edited !${RESET}"; \
+	else \
+		echo "${GREEN}/etc/subuid already configured${RESET}"; \
+	fi
+	@if ! grep -q "^dockermap" /etc/subgid 2>/dev/null; then \
+		echo "${YELLOW}Editing /etc/subgid...${RESET}"; \
+		echo "dockermap:100000:65536" | sudo tee -a /etc/subgid > /dev/null; \
+		echo "${GREEN}/etc/subgid has been edited !${RESET}"; \
+	else \
+		echo "${GREEN}/etc/subgid already configured${RESET}"; \
+	fi
+	@if ! grep -q "userns-remap" /etc/docker/daemon.json 2>/dev/null; then \
+		echo "${YELLOW}Configuring docker daemon...${RESET}"; \
+		if [ ! -f /etc/docker/daemon.json ]; then \
+			echo '{"userns-remap": "dockermap"}' | sudo tee /etc/docker/daemon.json > /dev/null; \
+			echo "${GREEN}/etc/docker/daemon.json has been created and edited !${RESET}"; \
+		else \
+			sudo cp /etc/docker/daemon.json /etc/docker/daemon.json.old; \
+			sudo jq '. + {"userns-remap": "dockermap"}' /etc/docker/daemon.json.old > /tmp/daemon.json.tmp; \
+			sudo mv /tmp/daemon.json.tmp /etc/docker/daemon.json; \
+			echo "${GREEN}/etc/docker/daemon.json has been edited !${RESET}"; \
+		fi; \
+		echo "${YELLOW}Restarting Docker...${RESET}"; \
+		sudo systemctl restart docker; \
+		sleep 4; \
+		echo "${GREEN}/etc/docker/daemon.json has been configured !${RESET}"; \
+	else \
+		echo "${GREEN}/etc/docker/daemon.json already configured${RESET}"; \
+	fi
+
+setup-dirs:
+		@echo "${CYAN}Setup data directories...${RESET}"
+		@mkdir -p /srv/data/mariadb /srv/data/wordpress
+		@chown root:root /srv/data && chmod 755 /srv/data
+		@chown -R 100999:100999 /srv/data/mariadb && chmod 700 /srv/data/mariadb
+		@chown -R 100033:100033 /srv/data/wordpress && chmod 700 /srv/data/wordpress
 
 build:
 	@echo "${CYAN}Building...${RESET}"
 	docker compose -f ${COMPOSE_FILE} build
 
-up:	build
+up:
 	docker compose -f ${COMPOSE_FILE} up -d
 	@echo "${GREEN}${BOLD}${BLINK}Containers are up !${RESET}"
 
@@ -29,7 +77,7 @@ down:
 	@echo "${YELLOW}${BOLD}Containers has been shutdowned !${RESET}"
 
 down-v:
-	docker compose -f ${COMPOSE_FILE} down -v
+	docker compose -f ${COMPOSE_FILE} down
 	rm -rf /srv/data/mariadb/*
 	rm -rf /srv/data/wordpress/*
 	@echo "${YELLOW}${BOLD}Containers has been shutdowned and volumes has been erased !${RESET}"
@@ -45,17 +93,22 @@ status:
 
 restart:
 	docker compose -f ${COMPOSE_FILE} restart
-	@echo "${PURPLE}${BOLD}${BLINK}All containers has been restarted !${RESET}"
+	@echo "${GREEN}${BOLD}${BLINK}All containers has been restarted !${RESET}"
+
+recreate: down up
+	@echo "${GREEN}${BOLD}${BLINK}All containers has been recreated !${RESET}"
 
 clean:
-	docker compose -f ${COMPOSE_FILE} down -v --rmi all
-	rm -rf /srv/data/mariadb/*
-	rm -rf /srv/data/wordpress/*
-	@echo "${YELLOW}${BOLD}Containers shutdowned, volumes and ALL images erased !${RESET}"
+	docker compose -f ${COMPOSE_FILE} down --rmi all
+	sudo rm -rf /srv/data/mariadb/*
+	sudo rm -rf /srv/data/wordpress/*
+	@echo "${YELLOW}${BOLD}Containers shutdowned, data and ALL images erased !${RESET}"
 
 fclean:
-	docker compose -f ${COMPOSE_FILE} down -v --rmi all
-	docker system prune -af --volumes
+	docker compose -f ${COMPOSE_FILE} down --rmi all
+	sudo rm -rf /srv/data/mariadb
+	sudo rm -rf /srv/data/wordpress
+	docker builder prune -af
 	@echo "${RED}${BOLD}Full clean-up has been achieved !${RESET}"
 
 re: fclean all
@@ -70,19 +123,19 @@ shell-nginx:
 
 help:
 	@echo "${BLUE}${BOLD}COMMANDS:${RESET}"
-	@echo "${PURPLE}${ITAL} make       		- Build and start"
-	@echo "${PURPLE}${ITAL} make build      	- Build all project images"
-	@echo "${PURPLE}${ITAL} make down     		- Shutdown containers"
-	@echo "${PURPLE}${ITAL} make down-v     	- Shutdown containers and erase volumes"
-	@echo "${PURPLE}${ITAL} make logs      		- Show logs"
-	@echo "${PURPLE}${ITAL} make logs-rt    	- Show logs and wait for others"
-	@echo "${PURPLE}${ITAL} make status     	- Show containers status"
-	@echo "${PURPLE}${ITAL} make restart    	- Restart containers"
-	@echo "${PURPLE}${ITAL} make clean     		- Shutdown containers and erase volumes and all images"
-	@echo "${PURPLE}${ITAL} make fclean   		- Make a full clean-up, with a system docker prune"
-	@echo "${PURPLE}${ITAL} make re      		- Make a full clean-up, and execute 'ALL' rule"
-	@echo "${PURPLE}${ITAL} make shell-mariadb    	- Execute a shell inside mariadb container"
-	@echo "${PURPLE}${ITAL} make shell-wordpress    - Execute a shell inside wordpress container"
-	@echo "${PURPLE}${ITAL} make shell-nginx      	- Execute a shell inside nginx container"
+	@echo "${BLUE}${ITAL}${BOLD} make${RESET}			${CYAN}${ITAL}- Build and start${RESET}"
+	@echo "${BLUE}${ITAL}${BOLD} make build${RESET}		${CYAN}${ITAL}- Build all project images${RESET}"
+	@echo "${BLUE}${ITAL}${BOLD} make down${RESET}		${CYAN}${ITAL}- Shutdown containers"
+	@echo "${BLUE}${ITAL}${BOLD} make down -v${RESET}		${CYAN}${ITAL}- Shutdown containers and erase volumes${RESET}"
+	@echo "${BLUE}${ITAL}${BOLD} make logs${RESET}		${CYAN}${ITAL}- Show logs${RESET}"
+	@echo "${BLUE}${ITAL}${BOLD} make logs-rt${RESET}		${CYAN}${ITAL}- Show logs and wait for others${RESET}"
+	@echo "${BLUE}${ITAL}${BOLD} make status${RESET}		${CYAN}${ITAL}- Show containers status${RESET}"
+	@echo "${BLUE}${ITAL}${BOLD} make restart${RESET}		${CYAN}${ITAL}- Restart containers${RESET}"
+	@echo "${BLUE}${ITAL}${BOLD} make clean${RESET}		${CYAN}${ITAL}- Shutdown containers and erase volumes and all images${RESET}"
+	@echo "${BLUE}${ITAL}${BOLD} make fclean${RESET}		${CYAN}${ITAL}- Make a full clean-up, with a system docker prune${RESET}"
+	@echo "${BLUE}${ITAL}${BOLD} make re${RESET}		${CYAN}${ITAL}- Make a full clean-up, and execute 'ALL' rule${RESET}"
+	@echo "${BLUE}${ITAL}${BOLD} make shell-mariadb${RESET}	${CYAN}${ITAL}- Execute a shell inside mariadb container${RESET}"
+	@echo "${BLUE}${ITAL}${BOLD} make shell-wordpress${RESET}	${CYAN}${ITAL}- Execute a shell inside wordpress container${RESET}"
+	@echo "${BLUE}${ITAL}${BOLD} make shell-nginx${RESET}	${CYAN}${ITAL}- Execute a shell inside nginx container${RESET}"
 
 .PHONY: all up down build clean fclean re
