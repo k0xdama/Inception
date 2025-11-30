@@ -78,8 +78,8 @@ down:
 
 down-v:
 	docker compose -f ${COMPOSE_FILE} down
-	rm -rf /srv/data/mariadb/*
-	rm -rf /srv/data/wordpress/*
+	sudo rm -rf /srv/data/mariadb/*
+	sudo rm -rf /srv/data/wordpress/*
 	@echo "${YELLOW}${BOLD}Containers has been shutdowned and volumes has been erased !${RESET}"
 
 logs:
