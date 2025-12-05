@@ -25,6 +25,7 @@ services:
     networks:
       - inception_network
     restart: unless-stopped
+
   nginx:
     build:
       context: ./requirements/nginx
@@ -42,6 +43,7 @@ services:
     networks:
       - inception_network
     restart: unless-stopped
+
   mariadb:
     build:
       context: ./requirements/mariadb
